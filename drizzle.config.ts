@@ -8,5 +8,5 @@ export default {
   dbCredentials: {
     connectionString: env.DATABASE_URL,
   },
-  tablesFilter: ["carmy_*"],
+  tablesFilter: ["skybook_*"],
 } satisfies Config;
