@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1703784660180,
+      "tag": "0000_silent_exodus",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1703785390173,
+      "tag": "0001_cooing_ultragirl",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1703802301462,
+      "tag": "0002_polite_malice",
+      "breakpoints": true
+    }
+  ]
+}

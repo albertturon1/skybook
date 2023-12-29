@@ -1,110 +1,132 @@
-import { relations, sql } from "drizzle-orm";
-import {
-  bigint,
-  index,
-  int,
-  mysqlTableCreator,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/mysql-core";
-import { type AdapterAccount } from "next-auth/adapters";
+import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import { text, integer, sqliteTable, real } from "drizzle-orm/sqlite-core";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
-export const mysqlTable = mysqlTableCreator((name) => `skybook_${name}`);
+export enum DBTable {
+  book = "book",
+  bookAuthor = "bookAuthor",
+  user = "user",
+  languageCode = "languageCode",
+  author = "author",
+  bookCover = "bookCover",
+  publisher = "publisher",
+  payment = "payment",
+  reservation = "reservation",
+}
 
-export const posts = mysqlTable(
-  "post",
-  {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt").onUpdateNow(),
-  },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  }),
-);
+//------- TYPES --------
+export type Book = InferSelectModel<typeof bookTable>;
+export type InsertBook = InferInsertModel<typeof bookTable>;
 
-export const users = mysqlTable("user", {
-  id: varchar("id", { length: 255 }).notNull().primaryKey(),
-  name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("emailVerified", {
-    mode: "date",
-    fsp: 3,
-  }).default(sql`CURRENT_TIMESTAMP(3)`),
-  image: varchar("image", { length: 255 }),
+export type BookAuthor = InferSelectModel<typeof bookAuthorTable>;
+export type InsertBookAuthor = InferInsertModel<typeof bookAuthorTable>;
+
+export type User = InferSelectModel<typeof userTable>;
+
+export type LanguageCode = InferSelectModel<typeof languageCodeTable>;
+export type InsertLanguageCode = InferInsertModel<typeof languageCodeTable>;
+
+export type Author = InferSelectModel<typeof authorTable>;
+export type InsertAuthor = InferInsertModel<typeof authorTable>;
+
+export type BookImage = InferSelectModel<typeof bookCoverTable>;
+export type InsertBookImage = InferInsertModel<typeof bookCoverTable>;
+
+export type Publisher = InferSelectModel<typeof publisherTable>;
+export type InsertPublisher = InferInsertModel<typeof publisherTable>;
+
+//------- SCHEMAS --------
+export const paymentTable = sqliteTable(DBTable.payment, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  amount: real("amount").notNull(),
+  status: text("status", { length: 255 }).notNull(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-  sessions: many(sessions),
+export const reservationTable = sqliteTable(DBTable.reservation, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  user_id: integer("user_id").references(() => userTable.id, { onDelete: "cascade" }),
+  payment_id: integer("payment_id").references(() => paymentTable.id, { onDelete: "cascade" }),
+});
+
+export const userTable = sqliteTable(DBTable.user, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text("name", { length: 255 }),
+  email: text("email", { length: 255 }).notNull(),
+  email_verified: integer("email_verified", { mode: "timestamp" }),
+  image: text("image", { length: 255 }),
+});
+
+//------- DATASET RELATED TABLES --------
+export const languageCodeTable = sqliteTable(DBTable.languageCode, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
+});
+
+export const authorTable = sqliteTable(DBTable.author, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  author: text("author", { length: 255 }).notNull().unique(),
+});
+
+export const publisherTable = sqliteTable(DBTable.publisher, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  publisher: text("publisher", { length: 255 }).notNull().unique(),
+});
+
+export const bookTable = sqliteTable(DBTable.book, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  isbn: text("isbn").notNull(),
+  isbn13: text("isbn13"),
+  num_pages: integer("num_pages"),
+  average_rating: real("average_rating"),
+  ratings_count: integer("ratings_count"),
+  text_reviews_count: integer("text_reviews_count"),
+  publication_date: text("publication_date"),
+  language_code_id: integer("language_code_id").references(() => languageCodeTable.id, { onDelete: "cascade" }),
+  publisher_id: integer("publisher_id").references(() => publisherTable.id, { onDelete: "set null" }),
+});
+
+export const bookAuthorTable = sqliteTable(DBTable.bookAuthor, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  book_id: integer("book_id")
+    .references(() => bookTable.id, { onDelete: "cascade" })
+    .notNull(),
+  author_id: integer("author_id")
+    .references(() => authorTable.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+//TS enum, because for today there is CHECK in drizzle-orm (SQLite doesn't have enums)
+export enum BookImageSize {
+  small = "small",
+  medium = "medium",
+  large = "large",
+}
+
+export const bookCoverTable = sqliteTable(DBTable.bookCover, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  book_id: integer("book_id")
+    .references(() => bookTable.id, { onDelete: "cascade" })
+    .notNull(),
+  size: text("size").notNull(),
+  url: text("url").notNull(),
+});
+
+//------- RELATIONS --------
+
+export const bookTableRelations = relations(bookTable, ({ many, one }) => ({
+  bookCoverTable: many(bookCoverTable),
+  bookAuthorTable: many(bookAuthorTable),
+  publisherTable: one(publisherTable, { fields: [bookTable.publisher_id], references: [publisherTable.id] }),
+  languageCodeTable: one(languageCodeTable, {
+    fields: [bookTable.language_code_id],
+    references: [languageCodeTable.id],
+  }),
 }));
 
-export const accounts = mysqlTable(
-  "account",
-  {
-    userId: varchar("userId", { length: 255 }).notNull(),
-    type: varchar("type", { length: 255 })
-      .$type<AdapterAccount["type"]>()
-      .notNull(),
-    provider: varchar("provider", { length: 255 }).notNull(),
-    providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: int("expires_at"),
-    token_type: varchar("token_type", { length: 255 }),
-    scope: varchar("scope", { length: 255 }),
-    id_token: text("id_token"),
-    session_state: varchar("session_state", { length: 255 }),
-  },
-  (account) => ({
-    compoundKey: primaryKey(account.provider, account.providerAccountId),
-    userIdIdx: index("userId_idx").on(account.userId),
-  }),
-);
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+export const bookCoverTableRelations = relations(bookCoverTable, ({ one }) => ({
+  bookTable: one(bookTable, { fields: [bookCoverTable.book_id], references: [bookTable.id] }),
 }));
 
-export const sessions = mysqlTable(
-  "session",
-  {
-    sessionToken: varchar("sessionToken", { length: 255 })
-      .notNull()
-      .primaryKey(),
-    userId: varchar("userId", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (session) => ({
-    userIdIdx: index("userId_idx").on(session.userId),
-  }),
-);
-
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+export const bookAuthorTableRelations = relations(bookAuthorTable, ({ one }) => ({
+  bookTable: one(bookTable, { fields: [bookAuthorTable.book_id], references: [bookTable.id] }),
 }));
-
-export const verificationTokens = mysqlTable(
-  "verificationToken",
-  {
-    identifier: varchar("identifier", { length: 255 }).notNull(),
-    token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
-  }),
-);
