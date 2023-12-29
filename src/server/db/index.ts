@@ -1,14 +1,21 @@
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 
-export const dbCredentials = {
-  url: env.DATABASE_URL,
-  authToken:
-    env.DATABASE_AUTH_TOKEN
-};
-
 import * as schema from "./schema";
-import { env } from "~/env";
+import 'dotenv/config'
+
+
+if(!process.env.DATABASE_URL ){
+  throw "Missing DATABASE_URL in .env"
+}
+if(!process.env.DATABASE_AUTH_TOKEN ){
+  throw "Missing DATABASE_AUTH_TOKEN in .env"
+}
+
+export const dbCredentials = {
+  url: process.env.DATABASE_URL,
+  authToken: process.env.DATABASE_AUTH_TOKEN,
+};
 
 export const tursoClient = createClient(dbCredentials);
 export const db = drizzle(tursoClient, { schema });
