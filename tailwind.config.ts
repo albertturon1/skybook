@@ -7,6 +7,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        display: 'Open Sauce One, sans-serif',
+        headline: 'Miriam Libre, sans-serif',
       },
     },
   },
