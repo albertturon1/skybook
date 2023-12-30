@@ -7,7 +7,7 @@ import {
   bookCoverTable,
   bookAuthorTable,
 } from "~/server/db/schema";
-import { type BooksDataInserts } from "./generateDatasets.types";
+import { type BooksDataInserts } from "./createDatasets.types";
 import { db } from "~/server/db";
 
 /**

@@ -3,7 +3,7 @@ import csv from "csv-parser";
 import chalk from "chalk";
 import { BookImageSize } from "~/server/db/schema";
 import { type BookWithImage } from "./dataset.types";
-import { type BookImageMapItem } from "./generateDatasets.types";
+import { type BookImageMapItem } from "./createDatasets.types";
 
 const BOOKS_WITH_IMAGES_PATH = "./src/dataset/books_with_images.csv";
 
@@ -34,7 +34,7 @@ export function getBookImagesMap(): Promise<Map<string, BookImageMapItem[]>> {
 
         // If it exists, push the new item to the existing array
         if (small) {
-          bookImagesMap.get(isbn)?.push({ size:  BookImageSize.small, url: small });
+          bookImagesMap.get(isbn)?.push({ size: BookImageSize.small, url: small });
         }
 
         if (medium) {
