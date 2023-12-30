@@ -1,4 +1,4 @@
-import { type InArgs } from "@libsql/client/.";
+import { type InArgs } from "@libsql/client";
 
 export type SafeParseSuccess<D> = { success: true; data: D };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
