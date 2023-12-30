@@ -9,13 +9,9 @@ import {
   type Publisher,
   type LanguageCode,
 } from "~/server/db/schema";
-import { csvBookSchema } from "./generateDatasets.helpers";
+import { csvBookSchema } from "./createDatasets.helpers";
 import { type CSVBook } from "./dataset.types";
-import { type BookImageMapItem, type BooksDataInserts } from "./generateDatasets.types";
-
-const publishersMap = new Map<string, number>();
-const authorsMap = new Map<string, number>();
-const languageCodesMap = new Map<string, number>();
+import { type BookImageMapItem, type BooksDataInserts } from "./createDatasets.types";
 
 const BOOKS_PATH = "./src/dataset/books.csv";
 
@@ -29,6 +25,10 @@ const CONFIG: Options = {
 export function getBookCSVData(bookImagesMap: Map<string, BookImageMapItem[]>): Promise<BooksDataInserts> {
   return new Promise((resolve, reject) => {
     console.log(chalk.blue("--- READING CSV BOOKS - START"));
+
+    const publishersMap = new Map<string, number>();
+    const authorsMap = new Map<string, number>();
+    const languageCodesMap = new Map<string, number>();
 
     const books: Book[] = [];
     const bookAuthors: BookAuthor[] = [];
