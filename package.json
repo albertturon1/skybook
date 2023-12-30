@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",
+    "@fontsource/miriam-libre": "^5.0.18",
+    "@fontsource/open-sauce-one": "^5.0.7",
     "@libsql/client": "^0.4.0-pre.5",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^4.36.1",

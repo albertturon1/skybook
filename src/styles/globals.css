@@ -1,3 +1,6 @@
+@import "@fontsource/open-sauce-one";
+@import '@fontsource/miriam-libre';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
