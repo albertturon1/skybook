@@ -1,38 +1,35 @@
-import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 import { text, integer, sqliteTable, real } from "drizzle-orm/sqlite-core";
 
 export enum DBTable {
   book = "book",
-  bookAuthor = "bookAuthor",
-  user = "user",
-  languageCode = "languageCode",
+  authorRole = "authorRole",
   author = "author",
-  bookCover = "bookCover",
+  genre = "genre",
+  language = "language",
   publisher = "publisher",
-  payment = "payment",
+  bookAuthor = "bookAuthor",
+  bookAuthorRole = "bookAuthorRole",
+  bookGenre = "bookGenre",
+  bookStarRating = "bookStarRating",
   reservation = "reservation",
+  payment = "payment",
+  user = "user",
 }
 
 //------- TYPES --------
 export type Book = InferSelectModel<typeof bookTable>;
-export type InsertBook = InferInsertModel<typeof bookTable>;
-
 export type BookAuthor = InferSelectModel<typeof bookAuthorTable>;
-export type InsertBookAuthor = InferInsertModel<typeof bookAuthorTable>;
+export type BookAuthorRole = InferSelectModel<typeof bookAuthorRoleTable>;
+export type Language = InferSelectModel<typeof languageTable>;
+export type Author = InferSelectModel<typeof authorTable>;
+export type Publisher = InferSelectModel<typeof publisherTable>;
+export type Genre = InferSelectModel<typeof genreTable>;
+export type BookGenre = InferSelectModel<typeof bookGenreTable>;
+export type AuthorRole = InferSelectModel<typeof authorRoleTable>;
+export type BookStarRating = InferSelectModel<typeof bookStarRatingTable>;
 
 export type User = InferSelectModel<typeof userTable>;
-
-export type LanguageCode = InferSelectModel<typeof languageCodeTable>;
-export type InsertLanguageCode = InferInsertModel<typeof languageCodeTable>;
-
-export type Author = InferSelectModel<typeof authorTable>;
-export type InsertAuthor = InferInsertModel<typeof authorTable>;
-
-export type BookImage = InferSelectModel<typeof bookCoverTable>;
-export type InsertBookImage = InferInsertModel<typeof bookCoverTable>;
-
-export type Publisher = InferSelectModel<typeof publisherTable>;
-export type InsertPublisher = InferInsertModel<typeof publisherTable>;
 
 //------- SCHEMAS --------
 export const paymentTable = sqliteTable(DBTable.payment, {
@@ -56,9 +53,9 @@ export const userTable = sqliteTable(DBTable.user, {
 });
 
 //------- DATASET RELATED TABLES --------
-export const languageCodeTable = sqliteTable(DBTable.languageCode, {
+export const languageTable = sqliteTable(DBTable.language, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  code: text("code").notNull().unique(),
+  language: text("language").notNull().unique(),
 });
 
 export const authorTable = sqliteTable(DBTable.author, {
@@ -66,23 +63,36 @@ export const authorTable = sqliteTable(DBTable.author, {
   author: text("author", { length: 255 }).notNull().unique(),
 });
 
+export const authorRoleTable = sqliteTable(DBTable.authorRole, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  author_role: text("author_role", { length: 255 }).notNull().unique(), //E.g Goodreads Author, Illustrator, etc.
+});
+
 export const publisherTable = sqliteTable(DBTable.publisher, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   publisher: text("publisher", { length: 255 }).notNull().unique(),
+});
+
+export const genreTable = sqliteTable(DBTable.genre, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  genre: text("genre").notNull().unique(),
 });
 
 export const bookTable = sqliteTable(DBTable.book, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   isbn: text("isbn").notNull(),
-  isbn13: text("isbn13"),
-  num_pages: integer("num_pages"),
+  description: text("description"),
+  edition: text("edition"),
+  pages: integer("pages"),
+  price: real("price"),
   average_rating: real("average_rating"),
   ratings_count: integer("ratings_count"),
-  text_reviews_count: integer("text_reviews_count"),
+  liked_percent: integer("liked_percent"),
   publication_date: text("publication_date"),
-  language_code_id: integer("language_code_id").references(() => languageCodeTable.id, { onDelete: "cascade" }),
+  language_id: integer("language_id").references(() => languageTable.id, { onDelete: "set null" }),
   publisher_id: integer("publisher_id").references(() => publisherTable.id, { onDelete: "set null" }),
+  cover_url: text("cover_url"),
 });
 
 export const bookAuthorTable = sqliteTable(DBTable.bookAuthor, {
@@ -95,38 +105,76 @@ export const bookAuthorTable = sqliteTable(DBTable.bookAuthor, {
     .notNull(),
 });
 
-//TS enum, because for today there is CHECK in drizzle-orm (SQLite doesn't have enums)
-export enum BookImageSize {
-  small = "small",
-  medium = "medium",
-  large = "large",
-}
+//Star ratings from 1 to 5
+export const StarRating = Array.from({ length: 5 }, (_, i) => i + 1);
 
-export const bookCoverTable = sqliteTable(DBTable.bookCover, {
+export const bookStarRatingTable = sqliteTable(DBTable.bookStarRating, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   book_id: integer("book_id")
     .references(() => bookTable.id, { onDelete: "cascade" })
     .notNull(),
-  size: text("size").notNull(),
-  url: text("url").notNull(),
+  ratings_count: integer("ratings_count").notNull(),
+  star: integer("star").notNull(),
+});
+
+//if author has a special role e.g. Goodreads Author, Illustrator etc. then record in "bookAuthorRoleTable" will be created
+export const bookAuthorRoleTable = sqliteTable(DBTable.bookAuthorRole, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  book_id: integer("book_id")
+    .references(() => bookTable.id, { onDelete: "cascade" })
+    .notNull(),
+  book_author_id: integer("book_author_id")
+    .references(() => bookAuthorTable.id, { onDelete: "cascade" })
+    .notNull(),
+  author_role_id: integer("author_role_id")
+    .references(() => authorRoleTable.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+export const bookGenreTable = sqliteTable(DBTable.bookGenre, {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  book_id: integer("book_id")
+    .references(() => bookTable.id, { onDelete: "cascade" })
+    .notNull(),
+  genre_id: integer("genre_id")
+    .references(() => genreTable.id, { onDelete: "cascade" })
+    .notNull(),
 });
 
 //------- RELATIONS --------
 
 export const bookTableRelations = relations(bookTable, ({ many, one }) => ({
-  bookCoverTable: many(bookCoverTable),
   bookAuthorTable: many(bookAuthorTable),
+  bookGenreTable: many(bookGenreTable),
   publisherTable: one(publisherTable, { fields: [bookTable.publisher_id], references: [publisherTable.id] }),
-  languageCodeTable: one(languageCodeTable, {
-    fields: [bookTable.language_code_id],
-    references: [languageCodeTable.id],
+  languageTable: one(languageTable, {
+    fields: [bookTable.language_id],
+    references: [languageTable.id],
   }),
-}));
-
-export const bookCoverTableRelations = relations(bookCoverTable, ({ one }) => ({
-  bookTable: one(bookTable, { fields: [bookCoverTable.book_id], references: [bookTable.id] }),
 }));
 
 export const bookAuthorTableRelations = relations(bookAuthorTable, ({ one }) => ({
   bookTable: one(bookTable, { fields: [bookAuthorTable.book_id], references: [bookTable.id] }),
+  authorTable: one(authorTable, { fields: [bookAuthorTable.author_id], references: [authorTable.id] }),
+}));
+
+export const bookGenreTableRelations = relations(bookGenreTable, ({ one }) => ({
+  bookTable: one(bookTable, { fields: [bookGenreTable.book_id], references: [bookTable.id] }),
+  genreTable: one(genreTable, { fields: [bookGenreTable.genre_id], references: [genreTable.id] }),
+}));
+
+export const bookStarRatingTableRelations = relations(bookStarRatingTable, ({ one }) => ({
+  bookTable: one(bookTable, { fields: [bookStarRatingTable.book_id], references: [bookTable.id] }),
+}));
+
+export const bookAuthorRoleTableRelations = relations(bookAuthorRoleTable, ({ one }) => ({
+  bookTable: one(bookTable, { fields: [bookAuthorRoleTable.book_id], references: [bookTable.id] }),
+  bookAuthorTable: one(bookAuthorTable, {
+    fields: [bookAuthorRoleTable.book_author_id],
+    references: [bookAuthorTable.id],
+  }),
+  authorRoleTable: one(authorRoleTable, {
+    fields: [bookAuthorRoleTable.author_role_id],
+    references: [authorRoleTable.id],
+  }),
 }));

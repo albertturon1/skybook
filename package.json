@@ -13,7 +13,8 @@
     "migrate": "tsx drizzle/migrate",
     "push": "drizzle-kit push:sqlite",
     "studio": "drizzle-kit studio --port 3333",
-    "db:populate": "tsx src/dataset"
+    "db:populate": "tsx src/dataset",
+    "db:dev": "turso dev --db-file local-db"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",
