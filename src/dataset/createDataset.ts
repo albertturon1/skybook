@@ -1,9 +1,7 @@
-import { insertDataIntoDB } from "./insertIntoDB";
 import { getBookCSVData } from "./getBookCSVData";
-import { getBookImagesMap } from "./getBookImagesMap";
+import { insertDataIntoDB } from "./insertIntoDB";
 
 export async function createDataset() {
-  const bookImagesMap = await getBookImagesMap();
-  const data = await getBookCSVData(bookImagesMap);
+  const data = await getBookCSVData();
   await insertDataIntoDB(data);
 }
