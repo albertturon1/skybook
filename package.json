@@ -9,12 +9,12 @@
     "lint": "next lint",
     "start": "next start",
     "typescheck": "tsc --noEmit",
-    "generate": "drizzle-kit generate:sqlite --out ./drizzle/migrations --breakpoints --schema=./src/server/db/schema.ts",
-    "migrate": "tsx drizzle/migrate",
-    "push": "drizzle-kit push:sqlite",
-    "studio": "drizzle-kit studio --port 3333",
-    "db:populate": "tsx src/dataset",
-    "db:dev": "turso dev --db-file local-db"
+    "db:studio": "drizzle-kit studio --port 3333",
+    "db:migrate": "tsx drizzle/migrate",
+    "db:generate": "drizzle-kit generate:sqlite --out ./drizzle/migrations --breakpoints --schema=./src/server/db/schema.ts",
+    "db:push": "drizzle-kit push:sqlite",
+    "db:dev": "turso dev --db-file local-db",
+    "populate-db": "tsx src/dataset"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",
@@ -63,5 +63,5 @@
   "ct3aMetadata": {
     "initVersion": "7.24.2"
   },
-  "packageManager": "npm@9.8.1"
+  "packageManager": "^pnpmbun@1.0.21"
 }
