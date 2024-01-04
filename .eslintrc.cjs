@@ -31,6 +31,7 @@ const config = {
         checksVoidReturn: { arguments: false, attributes: false },
       },
     ],
+    "object-shorthand": "error"
   },
 };
 
