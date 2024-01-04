@@ -1,5 +1,4 @@
 import Image from "next/image";
-
 import book from "~/../public/book-orange.webp";
 
 export default async function Home() {
