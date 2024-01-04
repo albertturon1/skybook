@@ -39,13 +39,13 @@ export type CSVBook = Partial<{
 }>;
 
 export type BooksDataInserts = {
-  books: Book[];
-  bookAuthors: BookAuthor[];
-  authors: Author[];
-  publishers: Publisher[];
-  languages: Language[];
-  genres: Genre[];
-  bookGenres: BookGenre[];
-  bookAuthorRoles: BookAuthorRole[];
-  authorRoles: AuthorRole[];
+  booksData: Book[];
+  bookAuthorsData: BookAuthor[];
+  authorsData: Author[];
+  publishersData: Publisher[];
+  languagesData: Language[];
+  genresData: Genre[];
+  bookGenresData: BookGenre[];
+  bookAuthorRolesData: BookAuthorRole[];
+  authorRolesData: AuthorRole[];
 };

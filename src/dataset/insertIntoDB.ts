@@ -1,14 +1,14 @@
 import chalk from "chalk";
 import {
-  authorTable,
-  publisherTable,
-  languageTable,
-  bookTable,
-  bookAuthorTable,
-  authorRoleTable,
-  bookAuthorRoleTable,
-  genreTable,
-  bookGenreTable,
+  authors,
+  publishers,
+  languages,
+  books,
+  bookAuthors,
+  authorRoles,
+  bookAuthorRoles,
+  genres,
+  bookGenres,
 } from "~/server/db/schema";
 import { db } from "~/server/db";
 import { type BooksDataInserts } from "./dataset.types";
@@ -19,7 +19,17 @@ import { type BooksDataInserts } from "./dataset.types";
  * @description Function that inserts data into database
  */
 export async function insertDataIntoDB(data: BooksDataInserts) {
-  const { books, bookAuthors, authors, publishers, languages, authorRoles, bookAuthorRoles, genres, bookGenres } = data;
+  const {
+    booksData,
+    bookAuthorsData,
+    authorsData,
+    publishersData,
+    languagesData,
+    authorRolesData,
+    bookAuthorRolesData,
+    genresData,
+    bookGenresData,
+  } = data;
 
   try {
     for (const key in data) {
@@ -45,40 +55,40 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
       chalk.blue("--- INSERTING:\n- author\n- publisher\n- language\n- bookAuthor\n- books\n- bookCover\n\n--- BEGIN"),
     );
 
-    authors.forEach(async (e) => {
-      await tx.insert(authorTable).values(e);
+    authorsData.forEach(async (e) => {
+      await tx.insert(authors).values(e);
     });
 
-    publishers.forEach(async (e) => {
-      await tx.insert(publisherTable).values(e);
+    publishersData.forEach(async (e) => {
+      await tx.insert(publishers).values(e);
     });
 
-    languages.forEach(async (e) => {
-      await tx.insert(languageTable).values(e);
+    languagesData.forEach(async (e) => {
+      await tx.insert(languages).values(e);
     });
 
-    genres.forEach(async (e) => {
-      await tx.insert(genreTable).values(e);
+    genresData.forEach(async (e) => {
+      await tx.insert(genres).values(e);
     });
 
-    authorRoles.forEach(async (e) => {
-      await tx.insert(authorRoleTable).values(e);
+    authorRolesData.forEach(async (e) => {
+      await tx.insert(authorRoles).values(e);
     });
 
-    books.forEach(async (e) => {
-      await tx.insert(bookTable).values(e);
+    booksData.forEach(async (e) => {
+      await tx.insert(books).values(e);
     });
 
-    bookAuthors.forEach(async (e) => {
-      await tx.insert(bookAuthorTable).values(e);
+    bookAuthorsData.forEach(async (e) => {
+      await tx.insert(bookAuthors).values(e);
     });
 
-    bookAuthorRoles.forEach(async (e) => {
-      await tx.insert(bookAuthorRoleTable).values(e);
+    bookAuthorRolesData.forEach(async (e) => {
+      await tx.insert(bookAuthorRoles).values(e);
     });
 
-    bookGenres.forEach(async (e) => {
-      await tx.insert(bookGenreTable).values(e);
+    bookGenresData.forEach(async (e) => {
+      await tx.insert(bookGenres).values(e);
     });
   });
 
