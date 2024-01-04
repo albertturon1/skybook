@@ -1,5 +1,6 @@
 import { relations, type InferSelectModel } from "drizzle-orm";
-import { text, integer, sqliteTable, real } from "drizzle-orm/sqlite-core";
+import { text, integer, sqliteTable, real, primaryKey } from "drizzle-orm/sqlite-core";
+import { type AdapterAccount } from "next-auth/adapters";
 
 export enum DBTable {
   book = "book",
@@ -15,70 +16,115 @@ export enum DBTable {
   reservation = "reservation",
   payment = "payment",
   user = "user",
+  verificationToken = "verificationToken",
+  account = "account",
 }
 
 //------- TYPES --------
-export type Book = InferSelectModel<typeof bookTable>;
-export type BookAuthor = InferSelectModel<typeof bookAuthorTable>;
-export type BookAuthorRole = InferSelectModel<typeof bookAuthorRoleTable>;
-export type Language = InferSelectModel<typeof languageTable>;
-export type Author = InferSelectModel<typeof authorTable>;
-export type Publisher = InferSelectModel<typeof publisherTable>;
-export type Genre = InferSelectModel<typeof genreTable>;
-export type BookGenre = InferSelectModel<typeof bookGenreTable>;
-export type AuthorRole = InferSelectModel<typeof authorRoleTable>;
-export type BookStarRating = InferSelectModel<typeof bookStarRatingTable>;
+export type Book = InferSelectModel<typeof books>;
+export type BookAuthor = InferSelectModel<typeof bookAuthors>;
+export type BookAuthorRole = InferSelectModel<typeof bookAuthorRoles>;
+export type Language = InferSelectModel<typeof languages>;
+export type Author = InferSelectModel<typeof authors>;
+export type Publisher = InferSelectModel<typeof publishers>;
+export type Genre = InferSelectModel<typeof genres>;
+export type BookGenre = InferSelectModel<typeof bookGenres>;
+export type AuthorRole = InferSelectModel<typeof authorRoles>;
+export type BookStarRating = InferSelectModel<typeof bookStarRatings>;
 
-export type User = InferSelectModel<typeof userTable>;
+export type User = InferSelectModel<typeof users>;
 
 //------- SCHEMAS --------
-export const paymentTable = sqliteTable(DBTable.payment, {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  amount: real("amount").notNull(),
-  status: text("status", { length: 255 }).notNull(),
+export const users = sqliteTable("user", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name"),
+  email: text("email").notNull(),
+  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+  image: text("image"),
 });
 
-export const reservationTable = sqliteTable(DBTable.reservation, {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  user_id: integer("user_id").references(() => userTable.id, { onDelete: "cascade" }),
-  payment_id: integer("payment_id").references(() => paymentTable.id, { onDelete: "cascade" }),
+export const usersRelations = relations(users, ({ many }) => ({
+  accounts: many(accounts),
+  sessions: many(sessions),
+}));
+
+export const accounts = sqliteTable(
+  "account",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compoundKey: primaryKey(account.provider, account.providerAccountId),
+  }),
+);
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+}));
+
+export const verificationTokens = sqliteTable(
+  "verificationToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey(vt.identifier, vt.token),
+  }),
+);
+
+export const sessions = sqliteTable("session", {
+  sessionToken: text("sessionToken").notNull().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
 });
 
-export const userTable = sqliteTable(DBTable.user, {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name", { length: 255 }),
-  email: text("email", { length: 255 }).notNull(),
-  email_verified: integer("email_verified", { mode: "timestamp" }),
-  image: text("image", { length: 255 }),
-});
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+}));
 
 //------- DATASET RELATED TABLES --------
-export const languageTable = sqliteTable(DBTable.language, {
+export const languages = sqliteTable(DBTable.language, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   language: text("language").notNull().unique(),
 });
 
-export const authorTable = sqliteTable(DBTable.author, {
+export const authors = sqliteTable(DBTable.author, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   author: text("author", { length: 255 }).notNull().unique(),
 });
 
-export const authorRoleTable = sqliteTable(DBTable.authorRole, {
+export const authorRoles = sqliteTable(DBTable.authorRole, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   author_role: text("author_role", { length: 255 }).notNull().unique(), //E.g Goodreads Author, Illustrator, etc.
 });
 
-export const publisherTable = sqliteTable(DBTable.publisher, {
+export const publishers = sqliteTable(DBTable.publisher, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   publisher: text("publisher", { length: 255 }).notNull().unique(),
 });
 
-export const genreTable = sqliteTable(DBTable.genre, {
+export const genres = sqliteTable(DBTable.genre, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   genre: text("genre").notNull().unique(),
 });
 
-export const bookTable = sqliteTable(DBTable.book, {
+export const books = sqliteTable(DBTable.book, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   isbn: text("isbn").notNull(),
@@ -90,91 +136,91 @@ export const bookTable = sqliteTable(DBTable.book, {
   ratings_count: integer("ratings_count"),
   liked_percent: integer("liked_percent"),
   publication_date: text("publication_date"),
-  language_id: integer("language_id").references(() => languageTable.id, { onDelete: "set null" }),
-  publisher_id: integer("publisher_id").references(() => publisherTable.id, { onDelete: "set null" }),
+  language_id: integer("language_id").references(() => languages.id, { onDelete: "set null" }),
+  publisher_id: integer("publisher_id").references(() => publishers.id, { onDelete: "set null" }),
   cover_url: text("cover_url"),
 });
 
-export const bookAuthorTable = sqliteTable(DBTable.bookAuthor, {
+export const bookAuthors = sqliteTable(DBTable.bookAuthor, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   book_id: integer("book_id")
-    .references(() => bookTable.id, { onDelete: "cascade" })
+    .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
   author_id: integer("author_id")
-    .references(() => authorTable.id, { onDelete: "cascade" })
+    .references(() => authors.id, { onDelete: "cascade" })
     .notNull(),
 });
 
 //Star ratings from 1 to 5
 export const StarRating = Array.from({ length: 5 }, (_, i) => i + 1);
 
-export const bookStarRatingTable = sqliteTable(DBTable.bookStarRating, {
+export const bookStarRatings = sqliteTable(DBTable.bookStarRating, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   book_id: integer("book_id")
-    .references(() => bookTable.id, { onDelete: "cascade" })
+    .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
   ratings_count: integer("ratings_count").notNull(),
   star: integer("star").notNull(),
 });
 
-//if author has a special role e.g. Goodreads Author, Illustrator etc. then record in "bookAuthorRoleTable" will be created
-export const bookAuthorRoleTable = sqliteTable(DBTable.bookAuthorRole, {
+//if author has a special role e.g. Goodreads Author, Illustrator etc. then record in "bookAuthorRoles" will be created
+export const bookAuthorRoles = sqliteTable(DBTable.bookAuthorRole, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   book_id: integer("book_id")
-    .references(() => bookTable.id, { onDelete: "cascade" })
+    .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
   book_author_id: integer("book_author_id")
-    .references(() => bookAuthorTable.id, { onDelete: "cascade" })
+    .references(() => bookAuthors.id, { onDelete: "cascade" })
     .notNull(),
   author_role_id: integer("author_role_id")
-    .references(() => authorRoleTable.id, { onDelete: "cascade" })
+    .references(() => authorRoles.id, { onDelete: "cascade" })
     .notNull(),
 });
 
-export const bookGenreTable = sqliteTable(DBTable.bookGenre, {
+export const bookGenres = sqliteTable(DBTable.bookGenre, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   book_id: integer("book_id")
-    .references(() => bookTable.id, { onDelete: "cascade" })
+    .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
   genre_id: integer("genre_id")
-    .references(() => genreTable.id, { onDelete: "cascade" })
+    .references(() => genres.id, { onDelete: "cascade" })
     .notNull(),
 });
 
 //------- RELATIONS --------
 
-export const bookTableRelations = relations(bookTable, ({ many, one }) => ({
-  bookAuthorTable: many(bookAuthorTable),
-  bookGenreTable: many(bookGenreTable),
-  publisherTable: one(publisherTable, { fields: [bookTable.publisher_id], references: [publisherTable.id] }),
-  languageTable: one(languageTable, {
-    fields: [bookTable.language_id],
-    references: [languageTable.id],
+export const bookTableRelations = relations(books, ({ many, one }) => ({
+  bookAuthors: many(bookAuthors),
+  bookGenres: many(bookGenres),
+  publishers: one(publishers, { fields: [books.publisher_id], references: [publishers.id] }),
+  languages: one(languages, {
+    fields: [books.language_id],
+    references: [languages.id],
   }),
 }));
 
-export const bookAuthorTableRelations = relations(bookAuthorTable, ({ one }) => ({
-  bookTable: one(bookTable, { fields: [bookAuthorTable.book_id], references: [bookTable.id] }),
-  authorTable: one(authorTable, { fields: [bookAuthorTable.author_id], references: [authorTable.id] }),
+export const bookAuthorTableRelations = relations(bookAuthors, ({ one }) => ({
+  books: one(books, { fields: [bookAuthors.book_id], references: [books.id] }),
+  authors: one(authors, { fields: [bookAuthors.author_id], references: [authors.id] }),
 }));
 
-export const bookGenreTableRelations = relations(bookGenreTable, ({ one }) => ({
-  bookTable: one(bookTable, { fields: [bookGenreTable.book_id], references: [bookTable.id] }),
-  genreTable: one(genreTable, { fields: [bookGenreTable.genre_id], references: [genreTable.id] }),
+export const bookGenreTableRelations = relations(bookGenres, ({ one }) => ({
+  books: one(books, { fields: [bookGenres.book_id], references: [books.id] }),
+  genres: one(genres, { fields: [bookGenres.genre_id], references: [genres.id] }),
 }));
 
-export const bookStarRatingTableRelations = relations(bookStarRatingTable, ({ one }) => ({
-  bookTable: one(bookTable, { fields: [bookStarRatingTable.book_id], references: [bookTable.id] }),
+export const bookStarRatingTableRelations = relations(bookStarRatings, ({ one }) => ({
+  books: one(books, { fields: [bookStarRatings.book_id], references: [books.id] }),
 }));
 
-export const bookAuthorRoleTableRelations = relations(bookAuthorRoleTable, ({ one }) => ({
-  bookTable: one(bookTable, { fields: [bookAuthorRoleTable.book_id], references: [bookTable.id] }),
-  bookAuthorTable: one(bookAuthorTable, {
-    fields: [bookAuthorRoleTable.book_author_id],
-    references: [bookAuthorTable.id],
+export const bookAuthorRoleTableRelations = relations(bookAuthorRoles, ({ one }) => ({
+  books: one(books, { fields: [bookAuthorRoles.book_id], references: [books.id] }),
+  bookAuthors: one(bookAuthors, {
+    fields: [bookAuthorRoles.book_author_id],
+    references: [bookAuthors.id],
   }),
-  authorRoleTable: one(authorRoleTable, {
-    fields: [bookAuthorRoleTable.author_role_id],
-    references: [authorRoleTable.id],
+  authorRoles: one(authorRoles, {
+    fields: [bookAuthorRoles.author_role_id],
+    references: [authorRoles.id],
   }),
 }));

@@ -42,11 +42,11 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
     const languagesMap = new Map<string, number>();
     const genresMap = new Map<string, number>();
 
-    const books: Book[] = [];
-    const bookAuthors: BookAuthor[] = [];
-    const bookGenres: BookGenre[] = [];
-    const bookStarRatings: BookStarRating[] = [];
-    const bookAuthorRoles: BookAuthorRole[] = [];
+    const booksData: Book[] = [];
+    const bookAuthorsData: BookAuthor[] = [];
+    const bookGenresData: BookGenre[] = [];
+    const bookStarRatingsData: BookStarRating[] = [];
+    const bookAuthorRolesData: BookAuthorRole[] = [];
 
     fs.createReadStream(BOOKS_PATH)
       .pipe(csv(CONFIG))
@@ -60,27 +60,27 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
           !book.coverImg ||
           !book.price ||
           !book.title ||
-          books.length >= 20000 //skipping books when there are already 20000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
+          booksData.length >= 20000 //skipping booksData when there are already 20000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
         ) {
           return;
         }
-        const book_id = books.length;
+        const book_id = booksData.length;
 
-        //------- languageTable --------
+        //------- languagesData --------
         const language = book.language;
         setInTableMap(languagesMap, language);
 
-        //------- publisherTable --------
+        //------- publishersData --------
         const publisher = book.publisher;
         setInTableMap(publishersMap, publisher);
 
-        //------- bookStarRatingTable --------
+        //------- bookStarRatingsData --------
         const starRatingsString = book.ratingsByStars;
-        const starRatingsIDBefore = bookStarRatings.length; //using placeholder value to create id for elements
+        const starRatingsIDBefore = bookStarRatingsData.length; //using placeholder value to create id for elements
 
         if (starRatingsString) {
           try {
-            //E.g book.genres = ['3444695', '1921313', '745221', '171994', '93557'] - necessary to replace single quote to double quotes for parsing
+            //E.g book.genresData = ['3444695', '1921313', '745221', '171994', '93557'] - necessary to replace single quote to double quotes for parsing
             const starRatings = JSON.parse(starRatingsString.replaceAll(`'`, '"')) as string[];
 
             if (starRatings.length === 5) {
@@ -99,39 +99,39 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
                 };
               });
 
-              bookStarRatings.push(...bookRatings);
+              bookStarRatingsData.push(...bookRatings);
             }
           } catch (error) {
             console.log(error);
           }
         }
 
-        //------- bookGenreTable --------
+        //------- bookGenres --------
         if (book.genres) {
           try {
-            //E.g book.genres = "['Historical Fiction', 'Fiction']" - necessary to replace single quote to double quotes for parsing
-            const genres = JSON.parse(book.genres.replaceAll(`'`, '"')) as string[];
+            //E.g book.genresData = "['Historical Fiction', 'Fiction']" - necessary to replace single quote to double quotes for parsing
+            const genresData = JSON.parse(book.genres.replaceAll(`'`, '"')) as string[];
 
-            if (genres.length > 0) {
-              genres.forEach((genre, i) => {
+            if (genresData.length > 0) {
+              genresData.forEach((genre, i) => {
                 if (i >= 3) {
                   return;
                 }
                 //------- genresMap --------
                 setInTableMap(genresMap, genre);
-                bookGenres.push({
-                  id: bookGenres.length,
+                bookGenresData.push({
+                  id: bookGenresData.length,
                   book_id,
                   genre_id: genresMap.get(genre)!,
                 });
               });
             }
           } catch (error) {
-            console.log({ message: `Failed parsing genres for ISBN: ${book.isbn}`, error });
+            console.log({ message: `Failed parsing genresData for ISBN: ${book.isbn}`, error });
           }
         }
 
-        //------- bookAuthorTable and bookAuthorRole --------
+        //------- bookAuthorsData and bookAuthorRole --------
         if (book.author) {
           //E.g. authorsWithMaybeRoles = ["Gal Anonim", " Brandon Graham (Writer, Artist)", " Anno (Translator)"]
           const authorsWithMaybeRoles = book.author.split(/,(?![^(]*\))/);
@@ -142,7 +142,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
               break;
             }
 
-            //1 author can have many authorRoles
+            //1 author can have many authorRolesData
             //E.g [author, maybeRoles] = ["Gal Anonim",  undefined] or ["Brandon Graham",  "Writer, Artist"]
             const [author, maybeRoles] = authorWithMaybeRole.split("(").map((e) => {
               return e.replace(")", "").trim();
@@ -152,13 +152,13 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
               break;
             }
 
-            const book_author_id = bookAuthors.length;
+            const book_author_id = bookAuthorsData.length;
 
             if (!authorsMap.has(author)) {
               authorsMap.set(author, authorsMap.size);
 
-              //------- bookAuthorTable --------
-              bookAuthors.push({
+              //------- bookAuthorsData --------
+              bookAuthorsData.push({
                 id: book_author_id,
                 book_id,
                 //! because author has already been set above
@@ -166,12 +166,12 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
               });
             }
 
-            //checking if author has some special authorRoles. If not, not inserting anything
+            //checking if author has some special authorRolesData. If not, not inserting anything
             if (maybeRoles) {
-              //E.g. authorRoles = ["Writer", "Artist"]
-              const authorRoles = maybeRoles.split(",").map((e) => e.trim());
+              //E.g. authorRolesData = ["Writer", "Artist"]
+              const authorRolesData = maybeRoles.split(",").map((e) => e.trim());
 
-              for (const authorRole of authorRoles) {
+              for (const authorRole of authorRolesData) {
                 if (!authorRole) {
                   break;
                 }
@@ -179,9 +179,9 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
                 //adding authorRole to map if didn't occur yet
                 setInTableMap(authorRolesMap, authorRole);
 
-                //------- bookAuthorRoleTable --------
-                bookAuthorRoles.push({
-                  id: bookAuthorRoles.length,
+                //------- bookAuthorRolesData --------
+                bookAuthorRolesData.push({
+                  id: bookAuthorRolesData.length,
                   book_id,
                   book_author_id,
                   //! because author has already been set above
@@ -201,7 +201,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
           publication_date = getPublishDate(book.publishDate);
         }
 
-        //------- bookTable --------
+        //------- booksData --------
         /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 
         const transformedRow: Book = {
@@ -222,40 +222,40 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         };
         /* eslint-enable @typescript-eslint/prefer-nullish-coalescing */
 
-        books.push(transformedRow);
+        booksData.push(transformedRow);
       })
       .on("end", () => {
         console.log(chalk.green("\n--- READING CSV BOOKS - END\n"));
 
-        const authors: Author[] = Array.from(authorsMap, (entry) => {
+        const authorsData: Author[] = Array.from(authorsMap, (entry) => {
           return {
             id: entry[1],
             author: entry[0],
           };
         });
 
-        const publishers: Publisher[] = Array.from(publishersMap, (entry) => {
+        const publishersData: Publisher[] = Array.from(publishersMap, (entry) => {
           return {
             id: entry[1],
             publisher: entry[0],
           };
         });
 
-        const languages: Language[] = Array.from(languagesMap, (entry) => {
+        const languagesData: Language[] = Array.from(languagesMap, (entry) => {
           return {
             id: entry[1],
             language: entry[0],
           };
         });
 
-        const genres: Genre[] = Array.from(genresMap, (entry) => {
+        const genresData: Genre[] = Array.from(genresMap, (entry) => {
           return {
             id: entry[1],
             genre: entry[0],
           };
         });
 
-        const authorRoles: AuthorRole[] = Array.from(authorRolesMap, (entry) => {
+        const authorRolesData: AuthorRole[] = Array.from(authorRolesMap, (entry) => {
           return {
             id: entry[1],
             author_role: entry[0],
@@ -263,15 +263,15 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         });
 
         resolve({
-          authors,
-          bookAuthors,
-          books,
-          languages,
-          publishers,
-          genres,
-          authorRoles,
-          bookAuthorRoles,
-          bookGenres,
+          authorsData,
+          bookAuthorsData,
+          booksData,
+          languagesData,
+          publishersData,
+          genresData,
+          authorRolesData,
+          bookAuthorRolesData,
+          bookGenresData,
         });
       })
       .on("error", (error) => {
