@@ -17,6 +17,6 @@ export const dbCredentials = {
 };
 
 export const tursoClient = createClient(dbCredentials);
-export const db = drizzle(tursoClient, { schema: schema });
+export const db = drizzle(tursoClient, { schema });
 
 export type DBSchema = typeof schema;
