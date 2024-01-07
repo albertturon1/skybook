@@ -22,6 +22,7 @@ import {
   removeSpecialChars,
   getPublishDate,
   getFirstPublishDate,
+  splitArrayIntoChunks,
 } from "./getBookCSVData.helpers";
 import { type BooksDataInserts, type CSVBook } from "./dataset.types";
 
@@ -60,7 +61,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
           !book.coverImg ||
           !book.price ||
           !book.title ||
-          booksData.length >= 20000 //skipping booksData when there are already 20000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
+          booksData.length >= 25000 //skipping booksData when there are already 25000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
         ) {
           return;
         }
@@ -156,15 +157,15 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
 
             if (!authorsMap.has(author)) {
               authorsMap.set(author, authorsMap.size);
-
-              //------- bookAuthorsData --------
-              bookAuthorsData.push({
-                id: book_author_id,
-                book_id,
-                //! because author has already been set above
-                author_id: authorsMap.get(author)!,
-              });
             }
+
+            //------- bookAuthorsData --------
+            bookAuthorsData.push({
+              id: book_author_id,
+              book_id,
+              //! because author has already been set above
+              author_id: authorsMap.get(author)!,
+            });
 
             //checking if author has some special authorRolesData. If not, not inserting anything
             if (maybeRoles) {
@@ -203,6 +204,11 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
 
         //------- booksData --------
         /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+        const price = getNumberFromAny(book.price);
+        if (!price || isNaN(price)) {
+          console.log("Price must be a number.", book);
+          return;
+        }
 
         const transformedRow: Book = {
           id: book_id,
@@ -216,9 +222,9 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
           description: book.description ? removeSpecialChars(book.description) : null,
           average_rating: getNumberFromAny(book.rating),
           pages: getNumberFromAny(book.pages),
-          price: getNumberFromAny(book.price),
+          price,
           liked_percent: getNumberFromAny(book.likedPercent),
-          cover_url: book.coverImg || null,
+          cover_url: book.coverImg,
         };
         /* eslint-enable @typescript-eslint/prefer-nullish-coalescing */
 
@@ -263,15 +269,16 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         });
 
         resolve({
-          authorsData,
-          bookAuthorsData,
-          booksData,
-          languagesData,
-          publishersData,
-          genresData,
-          authorRolesData,
-          bookAuthorRolesData,
-          bookGenresData,
+          authorsData: splitArrayIntoChunks(authorsData),
+          bookAuthorsData: splitArrayIntoChunks(bookAuthorsData),
+          booksData: splitArrayIntoChunks(booksData),
+          languagesData: splitArrayIntoChunks(languagesData),
+          publishersData: splitArrayIntoChunks(publishersData),
+          genresData: splitArrayIntoChunks(genresData),
+          authorRolesData: splitArrayIntoChunks(authorRolesData),
+          bookAuthorRolesData: splitArrayIntoChunks(bookAuthorRolesData),
+          bookGenresData: splitArrayIntoChunks(bookGenresData),
+          bookStarRatingsData: splitArrayIntoChunks(bookStarRatingsData),
         });
       })
       .on("error", (error) => {

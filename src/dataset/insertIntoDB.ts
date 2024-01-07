@@ -9,6 +9,7 @@ import {
   bookAuthorRoles,
   genres,
   bookGenres,
+  bookStarRatings,
 } from "~/server/db/schema";
 import { db } from "~/server/db";
 import { type BooksDataInserts } from "./dataset.types";
@@ -29,11 +30,12 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
     bookAuthorRolesData,
     genresData,
     bookGenresData,
+    bookStarRatingsData,
   } = data;
 
   try {
     for (const key in data) {
-      const ids: number[] = data[key as keyof typeof data].map((e) => e.id);
+      const ids: number[] = data[key as keyof typeof data].flatMap((bookArray) => bookArray.map((book) => book.id));
 
       if (ids.length === 0) {
         throw chalk.red(`ERROR: ${key} is empty. Fix it before trying to insert data into db.`);
@@ -75,7 +77,7 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
       await tx.insert(authorRoles).values(e);
     });
 
-    booksData.forEach(async (e) => {
+    booksData.map(async (e) => {
       await tx.insert(books).values(e);
     });
 
@@ -89,6 +91,10 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
 
     bookGenresData.forEach(async (e) => {
       await tx.insert(bookGenres).values(e);
+    });
+
+    bookStarRatingsData.forEach(async (e) => {
+      await tx.insert(bookStarRatings).values(e);
     });
   });
 

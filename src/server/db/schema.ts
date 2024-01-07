@@ -31,7 +31,6 @@ export type Genre = InferSelectModel<typeof genres>;
 export type BookGenre = InferSelectModel<typeof bookGenres>;
 export type AuthorRole = InferSelectModel<typeof authorRoles>;
 export type BookStarRating = InferSelectModel<typeof bookStarRatings>;
-
 export type User = InferSelectModel<typeof users>;
 
 //------- SCHEMAS --------
@@ -131,14 +130,14 @@ export const books = sqliteTable(DBTable.book, {
   description: text("description"),
   edition: text("edition"),
   pages: integer("pages"),
-  price: real("price"),
+  price: real("price").notNull(),
   average_rating: real("average_rating"),
   ratings_count: integer("ratings_count"),
   liked_percent: integer("liked_percent"),
   publication_date: text("publication_date"),
   language_id: integer("language_id").references(() => languages.id, { onDelete: "set null" }),
   publisher_id: integer("publisher_id").references(() => publishers.id, { onDelete: "set null" }),
-  cover_url: text("cover_url"),
+  cover_url: text("cover_url").notNull(),
 });
 
 export const bookAuthors = sqliteTable(DBTable.bookAuthor, {
@@ -152,7 +151,7 @@ export const bookAuthors = sqliteTable(DBTable.bookAuthor, {
 });
 
 //Star ratings from 1 to 5
-export const StarRating = Array.from({ length: 5 }, (_, i) => i + 1);
+export const STARTS_RATING_RANGE = 5;
 
 export const bookStarRatings = sqliteTable(DBTable.bookStarRating, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
@@ -192,6 +191,7 @@ export const bookGenres = sqliteTable(DBTable.bookGenre, {
 export const bookTableRelations = relations(books, ({ many, one }) => ({
   bookAuthors: many(bookAuthors),
   bookGenres: many(bookGenres),
+  bookStarRatings: many(bookStarRatings),
   publishers: one(publishers, { fields: [books.publisher_id], references: [publishers.id] }),
   languages: one(languages, {
     fields: [books.language_id],
