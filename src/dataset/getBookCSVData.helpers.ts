@@ -142,3 +142,12 @@ export function getFirstPublishDate(date: string | undefined) {
   const newYear = Number(year) > 24 ? `19${year}` : `20${year}`;
   return `${newYear}-${month}-${day}`;
 }
+
+export function splitArrayIntoChunks<T>(array: T[], chunkSize = 100): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    result.push(array.slice(i, i + chunkSize));
+  }
+
+  return result;
+}
