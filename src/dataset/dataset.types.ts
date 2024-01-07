@@ -8,6 +8,7 @@ import {
   type BookAuthorRole,
   type AuthorRole,
   type BookGenre,
+  type BookStarRating,
 } from "~/server/db/schema";
 
 export type CSVBook = Partial<{
@@ -39,13 +40,14 @@ export type CSVBook = Partial<{
 }>;
 
 export type BooksDataInserts = {
-  booksData: Book[];
-  bookAuthorsData: BookAuthor[];
-  authorsData: Author[];
-  publishersData: Publisher[];
-  languagesData: Language[];
-  genresData: Genre[];
-  bookGenresData: BookGenre[];
-  bookAuthorRolesData: BookAuthorRole[];
-  authorRolesData: AuthorRole[];
+  booksData: Book[][];
+  bookAuthorsData: BookAuthor[][];
+  authorsData: Author[][];
+  publishersData: Publisher[][];
+  languagesData: Language[][];
+  genresData: Genre[][];
+  bookGenresData: BookGenre[][];
+  bookAuthorRolesData: BookAuthorRole[][];
+  authorRolesData: AuthorRole[][];
+  bookStarRatingsData: BookStarRating[][];
 };
