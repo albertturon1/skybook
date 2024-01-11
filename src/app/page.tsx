@@ -1,5 +1,5 @@
 import Image from "next/image";
-import book from "~/../public/book-orange.webp";
+import bookImage from "~/../public/book-orange.webp";
 import { api } from "~/trpc/server";
 import { unstable_cache } from "next/cache";
 import { BookHorizontalList } from "./_components/BookHorizontalList";
@@ -36,7 +36,7 @@ export default async function Home() {
           </h1>
           <p className="font-display text-lg">Borrow or buy thousands of ebooks without an effort.</p>
         </div>
-        <Image alt="Header image" src={book} className="hidden w-[50%] flex-1 bg-cover object-cover sm:flex" />
+        <Image alt="Header image" src={bookImage} className="hidden w-[50%] flex-1 bg-cover object-cover sm:flex" />
       </div>
       <BookHorizontalList recommendedBooks={recommendedBooks} title="Recommended books" />
       <BookHorizontalList recommendedBooks={allTimeGreatBooks} title="All time great" />
