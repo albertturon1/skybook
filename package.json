@@ -9,12 +9,15 @@
     "lint": "next lint",
     "start": "next start",
     "typescheck": "tsc --noEmit",
-    "db:studio": "drizzle-kit studio --port 3333",
-    "db:migrate": "tsx drizzle/migrate",
-    "db:generate": "drizzle-kit generate:sqlite --out ./drizzle/migrations --breakpoints --schema=./src/server/db/schema.ts",
-    "db:push": "drizzle-kit push:sqlite",
+    "db-studio:dev": "drizzle-kit studio --port 3333",
+    "db-studio:prod": "NODE_ENV=production drizzle-kit studio --port 3333",
+    "db-push": "drizzle-kit push:sqlite",
+    "db-generate": "NODE_ENV=production drizzle-kit generate:sqlite --out ./drizzle/migrations --breakpoints --schema=./src/server/db/schema.ts",
+    "db-migrate": "NODE_ENV=production tsx drizzle/migrate",
     "db:dev": "turso dev --db-file local-db",
-    "populate-db": "tsx src/dataset"
+    "db-populate:dev": "tsx src/dataset",
+    "db-populate:prod": "bun db-generate && bun db-migrate && NODE_ENV=production tsx src/dataset",
+    "db-token": "turso db tokens create skybook"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",
@@ -65,5 +68,5 @@
   "ct3aMetadata": {
     "initVersion": "7.24.2"
   },
-  "packageManager": "^pnpmbun@1.0.21"
+  "packageManager": "^bun@1.0.21"
 }

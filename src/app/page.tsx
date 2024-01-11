@@ -10,7 +10,7 @@ const getCachedRecommendedBooks = unstable_cache(
   async () => await api.book.getRecommendedBooks.query(LIMIT),
   [`getCachedRecommendedBooks-${LIMIT}`],
   {
-    revalidate: 24 * 60 * 60,
+    revalidate: 60 * 60,
   },
 );
 

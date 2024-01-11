@@ -61,7 +61,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
           !book.coverImg ||
           !book.price ||
           !book.title ||
-          booksData.length >= 25000 //skipping booksData when there are already 25000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
+          booksData.length >= 35000 //skipping booksData when there are already 35000 of them. In case of 'TRANSACTION_TIMEOUT' error, please decrease this value.
         ) {
           return;
         }
@@ -206,7 +206,6 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
         const price = getNumberFromAny(book.price);
         if (!price || isNaN(price)) {
-          console.log("Price must be a number.", book);
           return;
         }
 
