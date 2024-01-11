@@ -88,7 +88,7 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
       await tx.insert(authorRoles).values(e);
     });
 
-    booksData.map(async (e) => {
+    void booksData.map(async (e) => {
       await tx.insert(books).values(e);
     });
 
