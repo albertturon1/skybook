@@ -3,6 +3,7 @@ import book from "~/../public/book-orange.webp";
 import { api } from "~/trpc/server";
 import { unstable_cache } from "next/cache";
 import { BookHorizontalList } from "./_components/BookHorizontalList";
+import { hoursToSeconds } from "~/utils/misc";
 
 const LIMIT = 4;
 
@@ -10,12 +11,21 @@ const getCachedRecommendedBooks = unstable_cache(
   async () => await api.book.getRecommendedBooks.query(LIMIT),
   [`getCachedRecommendedBooks-${LIMIT}`],
   {
-    revalidate: 60 * 60,
+    revalidate: hoursToSeconds(1),
+  },
+);
+
+const getCachedAllTimeGreatBooks = unstable_cache(
+  async () => await api.book.getAllTimeGreat.query(LIMIT),
+  [`getCachedRecommendedBooks-${LIMIT}`],
+  {
+    revalidate: hoursToSeconds(24),
   },
 );
 
 export default async function Home() {
   const recommendedBooks = await getCachedRecommendedBooks();
+  const allTimeGreatBooks = await getCachedAllTimeGreatBooks();
 
   return (
     <main className="mx-auto flex flex-col lg:container">
@@ -29,6 +39,7 @@ export default async function Home() {
         <Image alt="Header image" src={book} className="hidden w-[50%] flex-1 bg-cover object-cover sm:flex" />
       </div>
       <BookHorizontalList recommendedBooks={recommendedBooks} title="Recommended books" />
+      <BookHorizontalList recommendedBooks={allTimeGreatBooks} title="All time great" />
     </main>
   );
 }
