@@ -31,7 +31,7 @@ export default async function Home() {
     <main className="mx-auto flex flex-col lg:container">
       <div className="mb-10 flex max-h-[600px] bg-green-300 sm:flex-row md:space-x-4">
         <div id="left-side" className="flex flex-1 flex-col justify-between  px-3 py-6 md:space-y-16 md:px-0 md:pl-6">
-          <h1 className="py-3 font-display text-5xl font-black leading-snug sm:py-6 md:py-10 lg:text-6xl lg:leading-normal">
+          <h1 className="font-display py-3 text-5xl font-black leading-snug sm:py-6 md:py-10 lg:text-6xl lg:leading-normal">
             The best platform to learn secrets of books.
           </h1>
           <p className="font-display text-lg">Borrow or buy thousands of ebooks without an effort.</p>

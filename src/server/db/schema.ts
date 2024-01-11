@@ -57,12 +57,12 @@ export const accounts = sqliteTable(
     provider: text("provider").notNull(),
     providerAccountId: text("providerAccountId").notNull(),
     refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
+    accessToken: text("access_token"),
+    expiresAt: integer("expires_at"),
+    tokenType: text("token_type"),
     scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
+    idToken: text("id_token"),
+    sessionTtate: text("session_state"),
   },
   (account) => ({
     compoundKey: primaryKey(account.provider, account.providerAccountId),
@@ -110,7 +110,7 @@ export const authors = sqliteTable(DBTable.author, {
 
 export const authorRoles = sqliteTable(DBTable.authorRole, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  author_role: text("author_role", { length: 255 }).notNull().unique(), //E.g Goodreads Author, Illustrator, etc.
+  authorRole: text("author_role", { length: 255 }).notNull().unique(), //E.g Goodreads Author, Illustrator, etc.
 });
 
 export const publishers = sqliteTable(DBTable.publisher, {
@@ -131,21 +131,21 @@ export const books = sqliteTable(DBTable.book, {
   edition: text("edition"),
   pages: integer("pages"),
   price: real("price").notNull(),
-  average_rating: real("average_rating"),
-  ratings_count: integer("ratings_count"),
-  liked_percent: integer("liked_percent"),
-  publication_date: text("publication_date"),
-  language_id: integer("language_id").references(() => languages.id, { onDelete: "set null" }),
-  publisher_id: integer("publisher_id").references(() => publishers.id, { onDelete: "set null" }),
-  cover_url: text("cover_url").notNull(),
+  averageRating: real("average_rating"),
+  ratingsCount: integer("ratings_count"),
+  likedPercent: integer("liked_percent"),
+  publicationDate: text("publication_date"),
+  languageId: integer("language_id").references(() => languages.id, { onDelete: "set null" }),
+  publisherId: integer("publisher_id").references(() => publishers.id, { onDelete: "set null" }),
+  coverUrl: text("cover_url").notNull(),
 });
 
 export const bookAuthors = sqliteTable(DBTable.bookAuthor, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  book_id: integer("book_id")
+  bookId: integer("book_id")
     .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
-  author_id: integer("author_id")
+  authorId: integer("author_id")
     .references(() => authors.id, { onDelete: "cascade" })
     .notNull(),
 });
@@ -155,30 +155,30 @@ export const STARTS_RATING_RANGE = 5;
 
 export const bookStarRatings = sqliteTable(DBTable.bookStarRating, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  book_id: integer("book_id")
+  bookId: integer("book_id")
     .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
-  ratings_count: integer("ratings_count").notNull(),
+  ratingsCount: integer("ratings_count").notNull(),
   star: integer("star").notNull(),
 });
 
 //if author has a special role e.g. Goodreads Author, Illustrator etc. then record in "bookAuthorRoles" will be created
 export const bookAuthorRoles = sqliteTable(DBTable.bookAuthorRole, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  book_id: integer("book_id")
+  bookId: integer("book_id")
     .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
-  book_author_id: integer("book_author_id")
+  bookAuthorId: integer("book_author_id")
     .references(() => bookAuthors.id, { onDelete: "cascade" })
     .notNull(),
-  author_role_id: integer("author_role_id")
+  authorRoleId: integer("author_role_id")
     .references(() => authorRoles.id, { onDelete: "cascade" })
     .notNull(),
 });
 
 export const bookGenres = sqliteTable(DBTable.bookGenre, {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  book_id: integer("book_id")
+  bookId: integer("book_id")
     .references(() => books.id, { onDelete: "cascade" })
     .notNull(),
   genre_id: integer("genre_id")
@@ -192,35 +192,35 @@ export const bookTableRelations = relations(books, ({ many, one }) => ({
   bookAuthors: many(bookAuthors),
   bookGenres: many(bookGenres),
   bookStarRatings: many(bookStarRatings),
-  publishers: one(publishers, { fields: [books.publisher_id], references: [publishers.id] }),
+  publishers: one(publishers, { fields: [books.publisherId], references: [publishers.id] }),
   languages: one(languages, {
-    fields: [books.language_id],
+    fields: [books.languageId],
     references: [languages.id],
   }),
 }));
 
 export const bookAuthorTableRelations = relations(bookAuthors, ({ one }) => ({
-  books: one(books, { fields: [bookAuthors.book_id], references: [books.id] }),
-  authors: one(authors, { fields: [bookAuthors.author_id], references: [authors.id] }),
+  books: one(books, { fields: [bookAuthors.bookId], references: [books.id] }),
+  authors: one(authors, { fields: [bookAuthors.authorId], references: [authors.id] }),
 }));
 
 export const bookGenreTableRelations = relations(bookGenres, ({ one }) => ({
-  books: one(books, { fields: [bookGenres.book_id], references: [books.id] }),
+  books: one(books, { fields: [bookGenres.bookId], references: [books.id] }),
   genres: one(genres, { fields: [bookGenres.genre_id], references: [genres.id] }),
 }));
 
 export const bookStarRatingTableRelations = relations(bookStarRatings, ({ one }) => ({
-  books: one(books, { fields: [bookStarRatings.book_id], references: [books.id] }),
+  books: one(books, { fields: [bookStarRatings.bookId], references: [books.id] }),
 }));
 
 export const bookAuthorRoleTableRelations = relations(bookAuthorRoles, ({ one }) => ({
-  books: one(books, { fields: [bookAuthorRoles.book_id], references: [books.id] }),
+  books: one(books, { fields: [bookAuthorRoles.bookId], references: [books.id] }),
   bookAuthors: one(bookAuthors, {
-    fields: [bookAuthorRoles.book_author_id],
+    fields: [bookAuthorRoles.bookAuthorId],
     references: [bookAuthors.id],
   }),
   authorRoles: one(authorRoles, {
-    fields: [bookAuthorRoles.author_role_id],
+    fields: [bookAuthorRoles.authorRoleId],
     references: [authorRoles.id],
   }),
 }));

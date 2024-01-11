@@ -23,8 +23,8 @@ export const bookRouter = createTRPCRouter({
       orderBy: sql`RANDOM()`,
       limit: input,
       columns: {
-        cover_url: true,
-        average_rating: true,
+        coverUrl: true,
+        averageRating: true,
         edition: true,
         isbn: true,
         price: true,
@@ -43,26 +43,26 @@ export const bookRouter = createTRPCRouter({
       },
       where: (books, { gte, and }) =>
         and(
-          gte(books.average_rating, 4.5),
-          gte(books.ratings_count, 1000),
-          gte(books.publication_date, maxPublicationDate),
+          gte(books.averageRating, 4.5),
+          gte(books.ratingsCount, 1000),
+          gte(books.publicationDate, maxPublicationDate),
         ),
     });
 
     return booksData.map((book) => {
-      const { bookAuthors, cover_url, average_rating, edition, isbn, price, title } = book;
+      const { bookAuthors, coverUrl, averageRating, edition, isbn, price, title } = book;
       const authors = bookAuthors.map((ba) => ba.authors.author);
 
-      return { authors, coverUrl: cover_url, averageRating: average_rating, edition, isbn, price, title };
+      return { authors, coverUrl, averageRating, edition, isbn, price, title };
     }) satisfies BookTileProps[];
   }),
   getAllTimeGreat: publicProcedure.input(z.number()).query(async ({ input }) => {
     const booksData = await db.query.books.findMany({
-      orderBy: (books, { desc }) => [desc(books.average_rating)],
+      orderBy: (books, { desc }) => [desc(books.averageRating)],
       limit: input,
       columns: {
-        cover_url: true,
-        average_rating: true,
+        coverUrl: true,
+        averageRating: true,
         edition: true,
         isbn: true,
         price: true,
@@ -79,14 +79,14 @@ export const bookRouter = createTRPCRouter({
           },
         },
       },
-      where: (books, { gte, and }) => and(gte(books.ratings_count, 1000000)),
+      where: (books, { gte, and }) => and(gte(books.ratingsCount, 1000000)),
     });
 
     return booksData.map((book) => {
-      const { bookAuthors, cover_url, average_rating, edition, isbn, price, title } = book;
+      const { bookAuthors, coverUrl, averageRating, edition, isbn, price, title } = book;
       const authors = bookAuthors.map((ba) => ba.authors.author);
 
-      return { authors, coverUrl: cover_url, averageRating: average_rating, edition, isbn, price, title };
+      return { authors, coverUrl, averageRating, edition, isbn, price, title };
     }) satisfies BookTileProps[];
   }),
   getBook: publicProcedure.input(z.string().min(10)).query(async ({ input }) => {
@@ -106,18 +106,10 @@ export const bookRouter = createTRPCRouter({
     });
 
     if (!booksData) return;
-
-    const { bookAuthors, cover_url, average_rating, edition, isbn, price, title } = booksData;
+    console.log("booksData", booksData);
+    const { bookAuthors, ...rest } = booksData;
     const authors = bookAuthors.map((ba) => ba.authors.author);
 
-    return {
-      authors,
-      coverUrl: cover_url,
-      averageRating: average_rating,
-      edition,
-      isbn,
-      price,
-      title,
-    } satisfies BookTileProps;
+    return { ...rest, authors };
   }),
 });
