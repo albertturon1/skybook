@@ -4,12 +4,14 @@ const config = {
   parserOptions: {
     project: true,
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "import"],
   extends: [
     "plugin:@next/next/recommended",
     "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended",
   ],
   rules: {
     // These opinionated rules are enabled in stylistic-type-checked above.
@@ -35,6 +37,11 @@ const config = {
     "object-shorthand": "error",
     "react/react-in-jsx-scope": "off",
     "react/jsx-uses-react": "off",
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
   },
 };
 
