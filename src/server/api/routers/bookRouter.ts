@@ -48,4 +48,29 @@ export const bookRouter = createTRPCRouter({
       return { authors, coverUrl: cover_url, averageRating: average_rating, edition, isbn, price, title };
     }) satisfies BookTileProps[];
   }),
+  getAllTimeGreat: publicProcedure.input(z.number()).query(async ({ input }) => {
+    const booksData = await db.query.books.findMany({
+      orderBy: (books, { desc }) => [desc(books.average_rating)],
+      limit: input,
+      with: {
+        bookAuthors: {
+          with: {
+            authors: {
+              columns: {
+                author: true,
+              },
+            },
+          },
+        },
+      },
+      where: (books, { gte, and }) => and(gte(books.ratings_count, 1000000)),
+    });
+
+    return booksData.map((book) => {
+      const { bookAuthors, cover_url, average_rating, edition, isbn, price, title } = book;
+      const authors = bookAuthors.map((ba) => ba.authors.author);
+
+      return { authors, coverUrl: cover_url, averageRating: average_rating, edition, isbn, price, title };
+    }) satisfies BookTileProps[];
+  }),
 });
