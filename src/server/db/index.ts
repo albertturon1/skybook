@@ -2,12 +2,14 @@ import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import * as schema from "./schema";
 
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV ?? "development"}` });
 
 if (!process.env.DATABASE_URL) {
   throw "Missing DATABASE_URL in .env";
 }
-if (!process.env.DATABASE_AUTH_TOKEN) {
+if (process.env.NODE_ENV !== "development" && !process.env.DATABASE_AUTH_TOKEN) {
   throw "Missing DATABASE_AUTH_TOKEN in .env";
 }
 

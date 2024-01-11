@@ -1,9 +1,147 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "43a39028-6716-41d2-8889-deb272c7ea21",
+  "id": "5867afdb-1c48-4121-ae7a-c96b71b7b7f1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "account": {
+      "name": "account",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "providerAccountId": {
+          "name": "providerAccountId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "token_type": {
+          "name": "token_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "session_state": {
+          "name": "session_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_userId_user_id_fk": {
+          "name": "account_userId_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "account_provider_providerAccountId_pk": {
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "authorRole": {
+      "name": "authorRole",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "author_role": {
+          "name": "author_role",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "authorRole_author_role_unique": {
+          "name": "authorRole_author_role_unique",
+          "columns": [
+            "author_role"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "author": {
       "name": "author",
       "columns": {
@@ -14,8 +152,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "name": {
-          "name": "name",
+        "author": {
+          "name": "author",
           "type": "text(255)",
           "primaryKey": false,
           "notNull": true,
@@ -23,15 +161,92 @@
         }
       },
       "indexes": {
-        "author_name_unique": {
-          "name": "author_name_unique",
+        "author_author_unique": {
+          "name": "author_author_unique",
           "columns": [
-            "name"
+            "author"
           ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bookAuthorRole": {
+      "name": "bookAuthorRole",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "book_author_id": {
+          "name": "book_author_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author_role_id": {
+          "name": "author_role_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bookAuthorRole_book_id_book_id_fk": {
+          "name": "bookAuthorRole_book_id_book_id_fk",
+          "tableFrom": "bookAuthorRole",
+          "tableTo": "book",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bookAuthorRole_book_author_id_bookAuthor_id_fk": {
+          "name": "bookAuthorRole_book_author_id_bookAuthor_id_fk",
+          "tableFrom": "bookAuthorRole",
+          "tableTo": "bookAuthor",
+          "columnsFrom": [
+            "book_author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bookAuthorRole_author_role_id_authorRole_id_fk": {
+          "name": "bookAuthorRole_author_role_id_authorRole_id_fk",
+          "tableFrom": "bookAuthorRole",
+          "tableTo": "authorRole",
+          "columnsFrom": [
+            "author_role_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -92,8 +307,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "bookImage": {
-      "name": "bookImage",
+    "bookGenre": {
+      "name": "bookGenre",
       "columns": {
         "id": {
           "name": "id",
@@ -109,16 +324,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "size": {
-          "name": "size",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
+        "genre_id": {
+          "name": "genre_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -126,9 +334,73 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "bookImage_book_id_book_id_fk": {
-          "name": "bookImage_book_id_book_id_fk",
-          "tableFrom": "bookImage",
+        "bookGenre_book_id_book_id_fk": {
+          "name": "bookGenre_book_id_book_id_fk",
+          "tableFrom": "bookGenre",
+          "tableTo": "book",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bookGenre_genre_id_genre_id_fk": {
+          "name": "bookGenre_genre_id_genre_id_fk",
+          "tableFrom": "bookGenre",
+          "tableTo": "genre",
+          "columnsFrom": [
+            "genre_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bookStarRating": {
+      "name": "bookStarRating",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ratings_count": {
+          "name": "ratings_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "star": {
+          "name": "star",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bookStarRating_book_id_book_id_fk": {
+          "name": "bookStarRating_book_id_book_id_fk",
+          "tableFrom": "bookStarRating",
           "tableTo": "book",
           "columnsFrom": [
             "book_id"
@@ -167,18 +439,32 @@
           "notNull": true,
           "autoincrement": false
         },
-        "isbn13": {
-          "name": "isbn13",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "num_pages": {
-          "name": "num_pages",
+        "edition": {
+          "name": "edition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pages": {
+          "name": "pages",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "price": {
+          "name": "price",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "average_rating": {
@@ -195,8 +481,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "text_reviews_count": {
-          "name": "text_reviews_count",
+        "liked_percent": {
+          "name": "liked_percent",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -209,8 +495,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "language_code_id": {
-          "name": "language_code_id",
+        "language_id": {
+          "name": "language_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -222,21 +508,28 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "cover_url": {
+          "name": "cover_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "book_language_code_id_languageCode_id_fk": {
-          "name": "book_language_code_id_languageCode_id_fk",
+        "book_language_id_language_id_fk": {
+          "name": "book_language_id_language_id_fk",
           "tableFrom": "book",
-          "tableTo": "languageCode",
+          "tableTo": "language",
           "columnsFrom": [
-            "language_code_id"
+            "language_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "book_publisher_id_publisher_id_fk": {
@@ -256,8 +549,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "languageCode": {
-      "name": "languageCode",
+    "genre": {
+      "name": "genre",
       "columns": {
         "id": {
           "name": "id",
@@ -266,8 +559,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "code": {
-          "name": "code",
+        "genre": {
+          "name": "genre",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -275,10 +568,10 @@
         }
       },
       "indexes": {
-        "languageCode_code_unique": {
-          "name": "languageCode_code_unique",
+        "genre_genre_unique": {
+          "name": "genre_genre_unique",
           "columns": [
-            "code"
+            "genre"
           ],
           "isUnique": true
         }
@@ -287,8 +580,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "payment": {
-      "name": "payment",
+    "language": {
+      "name": "language",
       "columns": {
         "id": {
           "name": "id",
@@ -297,22 +590,23 @@
           "notNull": true,
           "autoincrement": true
         },
-        "amount": {
-          "name": "amount",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text(255)",
+        "language": {
+          "name": "language",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "language_language_unique": {
+          "name": "language_language_unique",
+          "columns": [
+            "language"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -327,8 +621,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "name": {
-          "name": "name",
+        "publisher": {
+          "name": "publisher",
           "type": "text(255)",
           "primaryKey": false,
           "notNull": true,
@@ -336,10 +630,10 @@
         }
       },
       "indexes": {
-        "publisher_name_unique": {
-          "name": "publisher_name_unique",
+        "publisher_publisher_unique": {
+          "name": "publisher_publisher_unique",
           "columns": [
-            "name"
+            "publisher"
           ],
           "isUnique": true
         }
@@ -348,52 +642,39 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "reservation": {
-      "name": "reservation",
+    "session": {
+      "name": "session",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "sessionToken": {
+          "name": "sessionToken",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
-        "payment_id": {
-          "name": "payment_id",
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires": {
+          "name": "expires",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "reservation_user_id_user_id_fk": {
-          "name": "reservation_user_id_user_id_fk",
-          "tableFrom": "reservation",
+        "session_userId_user_id_fk": {
+          "name": "session_userId_user_id_fk",
+          "tableFrom": "session",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "reservation_payment_id_payment_id_fk": {
-          "name": "reservation_payment_id_payment_id_fk",
-          "tableFrom": "reservation",
-          "tableTo": "payment",
-          "columnsFrom": [
-            "payment_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -410,27 +691,27 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "name": {
           "name": "name",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "email": {
           "name": "email",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "email_verified": {
-          "name": "email_verified",
+        "emailVerified": {
+          "name": "emailVerified",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -438,7 +719,7 @@
         },
         "image": {
           "name": "image",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -447,6 +728,43 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "verificationToken": {
+      "name": "verificationToken",
+      "columns": {
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires": {
+          "name": "expires",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "verificationToken_identifier_token_pk": {
+          "columns": [
+            "identifier",
+            "token"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     }
   },

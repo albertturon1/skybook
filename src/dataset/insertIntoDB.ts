@@ -14,6 +14,8 @@ import {
 import { db } from "~/server/db";
 import { type BooksDataInserts } from "./dataset.types";
 
+import { exec } from "child_process";
+
 /**
  *
  * @param data Properties aggregated from books.csv and books_with_images.csv
@@ -32,6 +34,17 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
     bookGenresData,
     bookStarRatingsData,
   } = data;
+
+  try {
+    const existingInDB = await db.query.bookAuthors.findFirst();
+    if (existingInDB) {
+      throw "Database has already been populated. Exiting process.";
+    } else {
+      exec("bun db-push");
+    }
+  } catch (error) {
+    exec("bun db-push");
+  }
 
   try {
     for (const key in data) {
@@ -53,9 +66,7 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
   }
 
   await db.transaction(async (tx) => {
-    console.log(
-      chalk.blue("--- INSERTING:\n- author\n- publisher\n- language\n- bookAuthor\n- books\n- bookCover\n\n--- BEGIN"),
-    );
+    console.log(chalk.blue("--- INSERTING - BEGIN ---"));
 
     authorsData.forEach(async (e) => {
       await tx.insert(authors).values(e);
@@ -98,6 +109,6 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
     });
   });
 
-  console.log(chalk.green("--- INSERTING - END\n"));
+  console.log(chalk.green("--- INSERTING - END ---\n"));
   process.exit();
 }
