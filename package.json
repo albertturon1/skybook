@@ -18,7 +18,8 @@
     "db:dev": "turso dev --db-file local-db",
     "db-populate:dev": "tsx src/dataset",
     "db-populate:prod": "bun db-generate && bun db-migrate && NODE_ENV=production tsx src/dataset",
-    "db-token": "turso db tokens create skybook"
+    "db-token": "turso db tokens create skybook",
+    "turso-shell": "turso db shell skybook"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",

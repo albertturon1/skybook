@@ -65,7 +65,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         ) {
           return;
         }
-        const book_id = booksData.length;
+        const bookId = booksData.length;
 
         //------- languagesData --------
         const language = book.language;
@@ -77,59 +77,23 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
 
         //------- bookStarRatingsData --------
         const starRatingsString = book.ratingsByStars;
-        const starRatingsIDBefore = bookStarRatingsData.length; //using placeholder value to create id for elements
+        const starRatingsIdBefore = bookStarRatingsData.length; //using placeholder value to create id for elements
 
-        if (starRatingsString) {
-          try {
-            //E.g book.genresData = ['3444695', '1921313', '745221', '171994', '93557'] - necessary to replace single quote to double quotes for parsing
-            const starRatings = JSON.parse(starRatingsString.replaceAll(`'`, '"')) as string[];
-
-            if (starRatings.length === 5) {
-              //reversing starRatings, because they come in order from 5 to 1
-              const bookRatings = starRatings.reverse().map((ratingsCount, i) => {
-                const ratings_count = getNumberFromAny(ratingsCount);
-                //checking for not, not for truthy, because 0 will throw an error
-                if (ratings_count === null) {
-                  throw `Failed to parse ratingsCount. Skipping ${book.isbn} bookRatings.`;
-                }
-                return {
-                  id: starRatingsIDBefore + i,
-                  book_id,
-                  ratings_count,
-                  star: i + 1,
-                };
-              });
-
-              bookStarRatingsData.push(...bookRatings);
-            }
-          } catch (error) {
-            console.log(error);
-          }
+        const bookStarRatings = getBookStarRatings({ starRatingsString, isbn: book.isbn, bookId, starRatingsIdBefore });
+        if (bookStarRatings) {
+          bookStarRatingsData.push(...bookStarRatings);
         }
 
         //------- bookGenres --------
-        if (book.genres) {
-          try {
-            //E.g book.genresData = "['Historical Fiction', 'Fiction']" - necessary to replace single quote to double quotes for parsing
-            const genresData = JSON.parse(book.genres.replaceAll(`'`, '"')) as string[];
-
-            if (genresData.length > 0) {
-              genresData.forEach((genre, i) => {
-                if (i >= 3) {
-                  return;
-                }
-                //------- genresMap --------
-                setInTableMap(genresMap, genre);
-                bookGenresData.push({
-                  id: bookGenresData.length,
-                  book_id,
-                  genre_id: genresMap.get(genre)!,
-                });
-              });
-            }
-          } catch (error) {
-            console.log({ message: `Failed parsing genresData for ISBN: ${book.isbn}`, error });
-          }
+        const bookGenres = getBookGenres({
+          isbn: book.isbn,
+          bookId,
+          bookGenresDataLength: bookGenresData.length,
+          genresMap,
+          genres: book.genres,
+        });
+        if (bookGenres) {
+          bookGenresData.push(...bookGenres);
         }
 
         //------- bookAuthorsData and bookAuthorRole --------
@@ -153,7 +117,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
               break;
             }
 
-            const book_author_id = bookAuthorsData.length;
+            const bookAuthorId = bookAuthorsData.length;
 
             if (!authorsMap.has(author)) {
               authorsMap.set(author, authorsMap.size);
@@ -161,10 +125,10 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
 
             //------- bookAuthorsData --------
             bookAuthorsData.push({
-              id: book_author_id,
-              book_id,
+              id: bookAuthorId,
+              bookId,
               //! because author has already been set above
-              author_id: authorsMap.get(author)!,
+              authorId: authorsMap.get(author)!,
             });
 
             //checking if author has some special authorRolesData. If not, not inserting anything
@@ -183,10 +147,10 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
                 //------- bookAuthorRolesData --------
                 bookAuthorRolesData.push({
                   id: bookAuthorRolesData.length,
-                  book_id,
-                  book_author_id,
+                  bookId,
+                  bookAuthorId,
                   //! because author has already been set above
-                  author_role_id: authorRolesMap.get(authorRole)!,
+                  authorRoleId: authorRolesMap.get(authorRole)!,
                 });
               }
             }
@@ -195,11 +159,11 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
 
         //------- publication_date Field --------
         //book.publish date can be in form 'August 1st 1988' or'06/01/88'
-        let publication_date = null;
+        let publicationDate = null;
         if (book.publishDate?.includes("/")) {
-          publication_date = getFirstPublishDate(book.publishDate);
+          publicationDate = getFirstPublishDate(book.publishDate);
         } else {
-          publication_date = getPublishDate(book.publishDate);
+          publicationDate = getPublishDate(book.publishDate);
         }
 
         //------- booksData --------
@@ -210,20 +174,20 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         }
 
         const transformedRow: Book = {
-          id: book_id,
+          id: bookId,
           title: book.title,
           isbn: book.isbn,
-          ratings_count: getNumberFromAny(book.numRatings),
-          publication_date,
-          language_id: language && languagesMap.has(language) ? languagesMap.get(language)! : null,
-          publisher_id: publisher && publishersMap.has(publisher) ? publishersMap.get(publisher)! : null,
+          ratingsCount: getNumberFromAny(book.numRatings),
+          publicationDate,
+          languageId: language && languagesMap.has(language) ? languagesMap.get(language)! : null,
+          publisherId: publisher && publishersMap.has(publisher) ? publishersMap.get(publisher)! : null,
           edition: book.edition || null,
           description: book.description ? removeSpecialChars(book.description) : null,
-          average_rating: getNumberFromAny(book.rating),
+          averageRating: getNumberFromAny(book.rating),
           pages: getNumberFromAny(book.pages),
           price,
-          liked_percent: getNumberFromAny(book.likedPercent),
-          cover_url: book.coverImg,
+          likedPercent: getNumberFromAny(book.likedPercent),
+          coverUrl: book.coverImg,
         };
         /* eslint-enable @typescript-eslint/prefer-nullish-coalescing */
 
@@ -263,7 +227,7 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         const authorRolesData: AuthorRole[] = Array.from(authorRolesMap, (entry) => {
           return {
             id: entry[1],
-            author_role: entry[0],
+            authorRole: entry[0],
           };
         });
 
@@ -284,4 +248,86 @@ export function getBookCSVData(): Promise<BooksDataInserts> {
         reject(error);
       });
   });
+}
+
+function getBookStarRatings({
+  bookId,
+  starRatingsString,
+  isbn,
+  starRatingsIdBefore,
+}: {
+  starRatingsString: string | undefined;
+  bookId: number;
+  isbn: string;
+  starRatingsIdBefore: number;
+}) {
+  if (starRatingsString) {
+    try {
+      //E.g book.genresData = ['3444695', '1921313', '745221', '171994', '93557'] - necessary to replace single quote to double quotes for parsing
+      const starRatings = JSON.parse(starRatingsString.replaceAll(`'`, '"')) as string[];
+      let currentStarRatingsIdBefore = starRatingsIdBefore;
+
+      if (starRatings.length === 5) {
+        //reversing starRatings, because they come in order from 5 to 1
+        const bookRatings = starRatings.reverse().map((rc, i) => {
+          const ratingsCount = getNumberFromAny(rc);
+          //checking for not, not for truthy, because 0 will throw an error
+          if (ratingsCount === null) {
+            throw `Failed to parse ratingsCount. Skipping ${isbn} bookRatings.`;
+          }
+          currentStarRatingsIdBefore++;
+          return {
+            id: currentStarRatingsIdBefore,
+            bookId,
+            ratingsCount,
+            star: i + 1,
+          };
+        });
+        return bookRatings;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+function getBookGenres({
+  genres,
+  genresMap,
+  bookGenresDataLength,
+  bookId,
+  isbn,
+}: {
+  genres?: string | undefined;
+  genresMap: Map<string, number>;
+  bookGenresDataLength: number;
+  bookId: number;
+  isbn: string;
+}) {
+  if (genres) {
+    try {
+      //E.g book.genresData = "['Historical Fiction', 'Fiction']" - necessary to replace single quote to double quotes for parsing
+      const genresData = JSON.parse(genres.replaceAll(`'`, '"')) as string[];
+
+      if (!genresData.length) return;
+
+      const bookGenres: BookGenre[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const genre = genresData[i];
+        if (!genre) break;
+
+        setInTableMap(genresMap, genre);
+        bookGenres.push({
+          id: bookGenresDataLength + i,
+          bookId,
+          genre_id: genresMap.get(genre)!,
+        });
+      }
+
+      return bookGenres;
+    } catch (error) {
+      console.log({ message: `Failed parsing genresData for ISBN: ${isbn}`, error });
+    }
+  }
 }

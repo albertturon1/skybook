@@ -14,8 +14,6 @@ import {
 import { db } from "~/server/db";
 import { type BooksDataInserts } from "./dataset.types";
 
-import { exec } from "child_process";
-
 /**
  *
  * @param data Properties aggregated from books.csv and books_with_images.csv
@@ -37,13 +35,15 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
 
   try {
     const existingInDB = await db.query.bookAuthors.findFirst();
+
     if (existingInDB) {
-      throw "Database has already been populated. Exiting process.";
-    } else {
-      exec("bun db-push");
+      console.log("record: ", existingInDB);
+      console.log("Database has already been populated. Exiting process.");
+      return;
     }
   } catch (error) {
-    exec("bun db-push");
+    console.log(error);
+    return;
   }
 
   try {
@@ -88,7 +88,8 @@ export async function insertDataIntoDB(data: BooksDataInserts) {
       await tx.insert(authorRoles).values(e);
     });
 
-    void booksData.map(async (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    booksData.map(async (e) => {
       await tx.insert(books).values(e);
     });
 
