@@ -19,13 +19,14 @@ export default async function Book({ params: { isbn } }: BookPageProps) {
           <Image
             alt="Header image"
             src={book.coverUrl}
-            className="hidden w-full flex-1 bg-cover object-cover sm:flex sm:w-[240px]"
+            className="hidden w-full flex-1 bg-cover object-cover sm:flex sm:w-[260px]"
             width="300"
             height="500"
           />
         </div>
-        <div className="flex flex-1 flex-col gap-y-4">
-          <h1 id="title" className="text-3xl font-semibold">
+
+        <section id="details" className="mt-1 flex max-w-[480px] flex-1 flex-col gap-y-3 lg:max-w-[550px]">
+          <h1 id="title" className="text-3xl font-semibold leading-[1.35]">
             {book.title}
           </h1>
 
@@ -43,25 +44,29 @@ export default async function Book({ params: { isbn } }: BookPageProps) {
             </div>
           </div>
 
-          <h1 id="price" className="text-2xl font-semibold">
-            {`${book.price} USD`}
-          </h1>
+          <div className="flex flex-col gap-y-2">
+            <BookTileStars averageRating={book.averageRating} size="medium" />
 
-          <AddToCartButton isbn={book.isbn} />
+            {book.ratingsCount ? (
+              <h1 id="reviewCount" className="text-sm tabular-nums">
+                {`${book.ratingsCount.toLocaleString()} ratings`}
+              </h1>
+            ) : null}
+          </div>
 
-          <BookTileStars averageRating={book.averageRating} size="medium" />
-
-          {book.ratingsCount ? (
-            <h1 id="reviewCount" className="text-sm tabular-nums">
-              {`${book.ratingsCount.toLocaleString()} ratings`}
+          <div className="mb-6 mt-3 flex flex-col gap-y-2">
+            <h1 id="price" className="text-2xl font-semibold">
+              {`${book.price} USD`}
             </h1>
-          ) : null}
 
-          <h1 id="description" className="max-w-[500px] text-sm leading-relaxed">
+            <AddToCartButton isbn={book.isbn} />
+          </div>
+
+          <h1 id="description" className="text-sm leading-relaxed">
             {book.description}
           </h1>
 
-          <div id="genres" className="flex items-center gap-x-4">
+          <div id="genres" className="mt-3 flex items-center gap-x-4">
             <h1>Genres</h1>
             <div className="flex items-center gap-x-3 text-sm font-light">
               {book.genres.map(({ genre, id }) => (
@@ -71,7 +76,7 @@ export default async function Book({ params: { isbn } }: BookPageProps) {
               ))}
             </div>
           </div>
-        </div>
+        </section>
       </section>
     </PageLayout>
   );

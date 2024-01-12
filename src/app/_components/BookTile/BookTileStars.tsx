@@ -5,8 +5,8 @@ export type BookTileStarsKey = "small" | "medium" | "large";
 
 const BOOK_TILE_STARS_TEXT_SIZE = {
   small: "text-sm",
-  medium: "text-normal",
-  large: "text-lg",
+  medium: "text-[0.9rem] leading-[1rem]",
+  large: "text-base",
 } as const satisfies Record<BookTileStarsKey, string>;
 
 export type BookTileStarsProps = { averageRating: number | null; size?: BookTileStarsKey };
