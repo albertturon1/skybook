@@ -10,8 +10,11 @@ export function AddToCartButton({ isbn }: AddToCartButtonProps) {
   }
 
   return (
-    <button onClick={handleAddToCart} className="flex max-w-[500px] items-center justify-center bg-orange-500 py-3">
-      <h1>Add to cart</h1>
+    <button
+      onClick={handleAddToCart}
+      className="flex w-full max-w-[480px] items-center justify-center bg-orange-500 py-3 lg:max-w-[550px]"
+    >
+      <h1 className="font-semibold text-white">Add to cart</h1>
     </button>
   );
 }

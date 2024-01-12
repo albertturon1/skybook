@@ -7,8 +7,8 @@ import { type BookTileStarsKey } from "./BookTileStars";
 
 export const BOOK_TILE_STAR_ICONS_SIZE = {
   small: 16,
-  medium: 24,
-  large: 32,
+  medium: 20,
+  large: 26,
 } as const satisfies Record<BookTileStarsKey, number>;
 
 export type BookTileStarIconsProps = { count: number; size: BookTileStarsKey };
