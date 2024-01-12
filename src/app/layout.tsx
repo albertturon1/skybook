@@ -16,19 +16,14 @@ export const metadata = {
   description: "",
 };
 
-export const NAVBAR_HEIGHT_REM = "4rem";
-export function getNavbarHeight() {
-  return `h-${NAVBAR_HEIGHT_REM}`;
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
         <TRPCReactProvider cookies={cookies().toString()}>
-          <main className={`min-h-screen w-full p-${NAVBAR_HEIGHT_REM} flex flex-col`}>
+          <main className={`flex min-h-screen w-full flex-col`}>
             <Navbar />
-            {children}
+            <div className="flex flex-1">{children}</div>
           </main>
         </TRPCReactProvider>
       </body>

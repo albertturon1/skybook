@@ -50,10 +50,9 @@ export const bookRouter = createTRPCRouter({
     });
 
     return booksData.map((book) => {
-      const { bookAuthors, coverUrl, averageRating, edition, isbn, price, title } = book;
-      const authors = bookAuthors.map((ba) => ba.authors.author);
+      const authors = book.bookAuthors.map((ba) => ba.authors.author);
 
-      return { authors, coverUrl, averageRating, edition, isbn, price, title };
+      return Object.assign(book, { authors });
     }) satisfies BookTileProps[];
   }),
   getAllTimeGreat: publicProcedure.input(z.number()).query(async ({ input }) => {
@@ -83,20 +82,30 @@ export const bookRouter = createTRPCRouter({
     });
 
     return booksData.map((book) => {
-      const { bookAuthors, coverUrl, averageRating, edition, isbn, price, title } = book;
-      const authors = bookAuthors.map((ba) => ba.authors.author);
+      const authors = book.bookAuthors.map((ba) => ba.authors.author);
 
-      return { authors, coverUrl, averageRating, edition, isbn, price, title };
+      return { authors, ...book };
     }) satisfies BookTileProps[];
   }),
   getBook: publicProcedure.input(z.string().min(10)).query(async ({ input }) => {
-    const booksData = await db.query.books.findFirst({
+    const bookData = await db.query.books.findFirst({
       with: {
         bookAuthors: {
           with: {
             authors: {
               columns: {
                 author: true,
+                id: true,
+              },
+            },
+          },
+        },
+        bookGenres: {
+          with: {
+            genres: {
+              columns: {
+                genre: true,
+                id: true,
               },
             },
           },
@@ -105,11 +114,10 @@ export const bookRouter = createTRPCRouter({
       where: (books, { eq }) => eq(books.isbn, input),
     });
 
-    if (!booksData) return;
-    console.log("booksData", booksData);
-    const { bookAuthors, ...rest } = booksData;
-    const authors = bookAuthors.map((ba) => ba.authors.author);
+    if (!bookData) return;
 
-    return { ...rest, authors };
+    const authors = bookData.bookAuthors.map((ba) => ba.authors);
+    const genres = bookData.bookGenres.map((ba) => ba.genres);
+    return Object.assign(bookData, { authors, genres });
   }),
 });
